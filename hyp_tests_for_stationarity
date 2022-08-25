@@ -1,0 +1,46 @@
+from statsmodels.tsa.stattools import adfuller, kpss
+import pmdarima as pmd
+
+
+def adfuller_test(ts, p=0.05, maxlag=None, regression="c"):
+    # Run test
+    result = adfuller(ts, maxlag=maxlag, regression=regression)
+    labels = [
+        "ADF test statistics",
+        "P-value",
+        "# Lags used",
+        "# Observations used",
+    ]
+    print(f"Running ADF test with p-threshold {p}\n")
+    for value, label in zip(result, labels):
+        print(f"{label}: {str(value)}")
+    print()
+    if result[1] <= p:
+        print("Reject the ADF null hypothesis. Time series is STATIONARY.")
+    else:
+        print("Cannot reject the ADF null hypothesis. Time series is NON-STATIONARY. ")
+
+def ocsb_test(ts, m):
+    print(f"Running OCSB test with seasonal period {m}\n")
+    # The test requires that we specify the seasonal period m
+    n_diff_ocsb = pmd.arima.OCSBTest(m=m).estimate_seasonal_differencing_term(ts)
+
+    # If the test recommends seasonal differencing, the TS is non-stationary
+    if n_diff_ocsb > 0:
+        print("Time series is NON-STATIONARY and requires seasonal differencing.")
+    else:
+        print("Time series is seasonally STATIONARY.")
+    print(f"Recommended order of seasonal differencing: {n_diff_ocsb}")
+    
+def kpss_test(ts, p=0.05, nlags="auto"):
+    # Run test
+    result = kpss(ts, nlags=nlags)
+    labels = ["KPSS test statistics", "P-value", "# Lags used"]
+    print(f"Running KPSS test with p-threshold {p}\n")
+    for value, label in zip(result, labels):
+        print(f"{label}: {str(value)}")
+    print()
+    if result[1] <= p:
+        print("Reject the KPSS null hypothesis. Time series is NON-STATIONARY. ")
+    else:
+        print("Cannot reject the KPSS null hypothesis. Time series is STATIONARY.")
