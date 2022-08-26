@@ -44,3 +44,35 @@ def kpss_test(ts, p=0.05, nlags="auto"):
         print("Reject the KPSS null hypothesis. Time series is NON-STATIONARY. ")
     else:
         print("Cannot reject the KPSS null hypothesis. Time series is STATIONARY.")
+        
+        
+  def test_stationarity(timeseries):
+    # Determine rolling statistics
+    movingAverage = timeseries.rolling(window=12).mean()
+    movingSTD = timeseries.rolling(window=12).std()
+
+    # Plot rolling statistics
+    orig = plt.plot(timeseries, color="blue", label="Original")
+    mean = plt.plot(movingAverage, color="red", label="Rolling Mean")
+    std = plt.plot(movingSTD, color="black", label="Rolling Std")
+    plt.legend(loc="best")
+    plt.title("Rolling Mean & Standard Deviation")
+    plt.show(block=False)
+
+    # Perform Dickey–Fuller test:
+    print("Results of Dickey Fuller Test:")
+    dftest = adfuller(timeseries, autolag="AIC")
+    dfoutput = pd.Series(
+        dftest[0:4],
+        index=[
+            "Test Statistic",
+            "p-value",
+            "#Lags Used",
+            "Number of Observations Used",
+        ],
+    )
+    for key, value in dftest[4].items():
+        dfoutput["Critical Value (%s)" % key] = value
+    print(dfoutput)
+
+    adfuller_test(timeseries)
